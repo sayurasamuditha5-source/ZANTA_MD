@@ -5,7 +5,7 @@ cmd(
         pattern: "save",
         react: "✅",
         desc: "Resend Status or One-Time View Media",
-        category: "general",
+        category: "download",
         filename: __filename,
     },
     async (
@@ -16,62 +16,43 @@ cmd(
             from,
             quoted,
             reply,
-            // Additional variables can be destructured here if needed
+            // You can destructure more variables if needed
         }
     ) => {
         try {
-            // Check if the user replied to a message
+            // 1. Check if the user replied to a message
             if (!quoted) {
-                return reply("*Please reply to the Status, One-Time View, or any Media message you want to save/resend!* 🧐");
+                return reply("*කරුණාකර ඔබට save කර ගැනීමට අවශ්‍ය Media Message එකකට (Status, OTV, Photo/Video) reply කරන්න!* 🧐");
             }
 
-            // --- Status Media Check ---
+            // 2. Check for the actual media content container (fakeObj is crucial for OTV/Status)
+            const mediaMessage = quoted.fakeObj;
+            
+            if (!mediaMessage) {
+                // If fakeObj is null or undefined, it means it's not a message containing media data.
+                return reply("*The replied message does not contain any Status, One-Time View, or recognizable Media!* 🤷‍♂️");
+            }
+
+            let saveCaption = "*💾 Saved and Resent!*";
+
+            // 3. Set a specific caption based on the message type
             if (quoted.isStatus) {
-                // Status media is usually directly available via quoted.fakeObj
-                
-                await zanta.copyNForward(from, quoted.fakeObj, { 
-                    caption: "*✅ Saved and Resent from Status!*",
-                    quoted: mek // Quote the original 'save' message
-                });
-                
-                return reply("*Status media successfully resent!* 🥳");
-            }
-
-            // --- One-Time View Media Check ---
-            if (quoted.isViewOnce) {
-                // One-Time View media is saved by copying the fakeObj
-                
-                await zanta.copyNForward(from, quoted.fakeObj, {
-                    caption: "*📸 Saved and Resent from One-Time View!*",
-                    quoted: mek
-                });
-                
-                return reply("*One-Time View media successfully saved and resent!* 💾");
-            }
+                saveCaption = "*✅ Saved and Resent from Status!*";
+            } else if (quoted.isViewOnce) {
+                // One-Time View media is ready to be forwarded via mediaMessage
+                saveCaption = "*📸 Saved and Resent from One-Time View!*";
+            } 
             
-            // --- Regular Media Check (FIX for TypeError: Cannot read properties of undefined (reading 'includes')) ---
+            // Note: We don't need complex mtype checks here. copyNForward handles the media type (image, video, etc.) inside mediaMessage.
             
-            // Determine the message type. We check fakeObj first for consistency, 
-            // but use quoted.mtype as a fallback.
-            const repliedMtype = quoted.fakeObj ? quoted.fakeObj.mtype : quoted.mtype;
+            // 4. Copy and Forward the media
+            // zanta.copyNForward is the correct method for OTV and Status media extraction/resending.
+            await zanta.copyNForward(from, mediaMessage, {
+                caption: saveCaption,
+                quoted: mek // Quote the original 'save' message
+            });
 
-            if (repliedMtype && (
-                repliedMtype.includes('imageMessage') || 
-                repliedMtype.includes('videoMessage') || 
-                repliedMtype.includes('audioMessage') || 
-                repliedMtype.includes('documentMessage'))) {
-                
-                // Use quoted.fakeObj to forward the media content
-                await zanta.copyNForward(from, quoted.fakeObj, {
-                    caption: "*💾 Saved and Resent!*",
-                    quoted: mek
-                });
-
-                return reply("*Media successfully resent!* ✨");
-            }
-            
-            // If it's not a Status, OTV, or any recognized media type
-            return reply("*The replied message does not contain any Status, One-Time View, or recognizable Media!* 🤷‍♂️");
+            return reply("*Media successfully processed and resent!* ✨");
 
         } catch (e) {
             console.error(e);
