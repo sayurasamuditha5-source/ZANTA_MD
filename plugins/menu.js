@@ -1,7 +1,8 @@
 const { cmd, commands } = require("../command");
-const config = require("../config"); // BOT_NAME ලබා ගැනීමට
+const os = require('os');
+const config = require("../config"); 
 
-// 🖼️ MENU Image URL එක 
+// 🖼️ MENU Image URL එක (ඔබගේ code එකේ තිබූ පරිදි)
 const MENU_IMAGE_URL = "https://raw.githubusercontent.com/Akashkavindu/ZANTA_MD/refs/heads/main/images/ChatGPT%20Image%20Nov%2021%2C%202025%2C%2001_49_53%20AM.png";
 
 cmd(
@@ -18,58 +19,176 @@ cmd(
         m,
         {
             from,
-            reply
+            reply,
+            args,
+            prefix 
         }
     ) => {
         try {
-            const categories = {};
 
-            // Commands, Category Key අනුව වෙන් කිරීම
-            for (let cmdName in commands) {
-                const cmdData = commands[cmdName];
-                
-                // Category Case Sensitivity Fix එක තවදුරටත් තබමු.
+            // 🚨 FIX: Prefix එක නිවැරදිව ලබා ගැනීම
+            const finalPrefix = prefix || config.PREFIX || '.'; 
+
+            // 🌟 Status & Owner Data
+            const botName = config.BOT_NAME || "ZANTA-MD"; 
+            const ownerName = config.OWNER_NAME || 'Akash ';
+
+            // සැබෑ RAM/RUNTIME ලබා ගැනීම සඳහා ඔබගේ බොට් එකේ code එකට අදාළ functions භාවිතා කරන්න
+            const totalCommands = commands.filter(c => c.pattern).length;
+            const mode = config.WORK_TYPE || "Public"; // Default to Public
+
+            // 1. Commands Category අනුව Group කිරීම
+            const groupedCommands = {};
+            const activeCommands = commands.filter(c => c.pattern); 
+            const categoryMap = {}; 
+            const categoryKeys = []; 
+
+            activeCommands.forEach(cmdData => {
                 let cat = cmdData.category?.toLowerCase() || "other";
                 if (cat === "genaral") cat = "other"; 
+                if (cmdData.pattern === "menu") return; 
 
-                if (cmdData.pattern === "menu") continue;
-                
-                if (!categories[cat]) categories[cat] = [];
-                categories[cat].push({
-                    pattern: cmdData.pattern,
-                    desc: cmdData.desc || `Use .${cmdData.pattern}`,
-                });
+                if (!groupedCommands[cat]) {
+                    groupedCommands[cat] = [];
+                    categoryKeys.push(cat);
+                }
+                groupedCommands[cat].push(cmdData);
+            });
+
+            let catIndexForMap = 1;
+            categoryKeys.forEach(cat => {
+                categoryMap[catIndexForMap] = cat; 
+                catIndexForMap++;
+            });
+
+
+            // ------------------------------------------------------------------
+            // A. ARGUMENTS MODE: .menu 1 හෝ .menu media යැවූ විට (Commands List)
+            // ------------------------------------------------------------------
+            if (args.length > 0) {
+
+                let selectedCategory;
+                const input = args[0].toLowerCase();
+
+                const num = parseInt(input);
+                if (!isNaN(num) && categoryMap[num]) {
+                    selectedCategory = categoryMap[num];
+                } else {
+                    // Category Name එක හරහා සෙවීම
+                    selectedCategory = categoryKeys.find(cat => cat.toLowerCase() === input);
+                }
+
+                if (selectedCategory && groupedCommands[selectedCategory]) {
+                    // 📄 Selected Category එකේ Commands පෙන්වීම
+
+                    let displayTitle = selectedCategory.toUpperCase();
+                    if (displayTitle === 'OTHER') displayTitle = 'GENERAL'; 
+
+                    // ✨ FANCY COMMAND LIST
+                    let commandList = `*Hello.. ${m.pushName || 'User'}🖐*\n`;
+
+                    commandList += `╭━─━─━─━─━─━─━─━╮\n`;
+                    commandList += `┃🎡 ${displayTitle} Command List:\n`;
+                    commandList += `╰━─━─━─━─━─━─━─━╯\n`;
+
+                    groupedCommands[selectedCategory].forEach((c) => {
+                        const commandPattern = c.pattern.replace(finalPrefix, ''); 
+                        const usage = c.pattern.startsWith(finalPrefix) ? c.pattern : finalPrefix + c.pattern;
+
+                        // desc එකේ පළමු පේළිය පමණක් ගන්න.
+                        const descLine = c.desc ? c.desc.split('\n')[0].trim() : 'No description provided.'; 
+
+                        // use එකට <args> එකතු කිරීමට 
+                        const usageDisplay = c.desc && c.desc.includes('<') ? usage + ' <args>' : usage; 
+
+                        commandList += `\n╭──────────●●►\n`;
+                        commandList += `│⛩ Command ☛ ${commandPattern}\n`; 
+                        commandList += `│🌟 Desc ☛ ${descLine}\n`; 
+                        commandList += `╰──────────●●►\n`;
+                    });
+
+                    commandList += `\n➠ Total Commands in ${displayTitle}: ${groupedCommands[selectedCategory].length}\n`;
+
+                    return reply(commandList); 
+
+                } else {
+                    return reply(`❌ Invalid category number or name: *${args[0]}*\n\nType ${finalPrefix}menu to see available categories.`);
+                }
             }
 
-            // -----------------------------------------------------
-            // A. Full Menu Generation (Non-Interactive)
-            // -----------------------------------------------------
-            const botName = config.BOT_NAME || "ZANTA-MD"; 
-            
-            let menuText = "╭━─━─━─━─━─━─━─━╮\n";
-            menuText += `┃ 👑 *WELLCOME TO ${botName}* 🤖\n`;
-            menuText += "┃   _All Available Commands_\n";
-            menuText += "╰━─━─━─━─━─━─━─━╯\n";
-            
-            // Iterate over all categories and list all commands
-            for (const catKey in categories) {
-                const catCommands = categories[catKey];
 
+            // ------------------------------------------------------------------
+            // B. MAIN MENU MODE: .menu යැවූ විට (Categories List)
+            // ------------------------------------------------------------------
+
+            // ✨ FANCY MAIN MENU
+            let menuText = `╭━〔 ${botName} WA BOT 〕━··๏\n`;
+            menuText += `┃★╭──────────────\n`;
+            menuText += `┃★│ 👑 Owner : ${ownerName}\n`; 
+            menuText += `┃★│ ⚙ Mode : [${mode}]\n`;
+            menuText += `┃★│ 🔣 Prefix : [${finalPrefix}]\n`;
+            menuText += `┃★│ 📚 Commands : ${totalCommands}\n`;
+            menuText += `┃★╰──────────────\n`;
+            menuText += `╰━━━━━━━━━━━━━━┈⊷\n`;
+
+            menuText += `╭━━〔 📜 MENU LIST 〕━━┈⊷\n`;
+
+            let categoryNumber = 1; // අනුක්‍රමික අංකය 1 න් ආරම්භ කිරීම
+
+            categoryKeys.forEach(catKey => {
+                const commandCount = groupedCommands[catKey].length;
                 let title = catKey.toUpperCase();
-                if (title === 'OTHER') title = 'GENERAL'; // Revert 'other' back to 'GENERAL' for display
+                if (title === 'OTHER') title = 'GENERAL';
 
-                menuText += `\n╭━━〔 📜 ${title}〕━━┈⊷\n`;
+                // Emoji mapping 
+                let emoji;
+                switch (catKey) {
+                    case 'main':
+                        emoji = '🏠';
+                        break;
+                    case 'download':
+                        emoji = '📥';
+                        break;
+                    case 'convert':
+                        emoji = '🔄';
+                        break;
+                    case 'fun':
+                        emoji = '😄';
+                        break;
+                    case 'group':
+                        emoji = '👥';
+                        break;
+                    case 'image':
+                        emoji = '🖼';
+                        break;
+                    case 'logo':
+                        emoji = '🎨';
+                        break;
+                    case 'owner':
+                        emoji = '👑';
+                        break;
+                    case 'search':
+                        emoji = '🔍';
+                        break;
+                    case 'settings':
+                        emoji = '⚙';
+                        break;
+                    default:
+                        emoji = '📌';
+                        break;
+                }
 
-                catCommands.forEach(c => {
-                    menuText += `│◻${c.pattern}\n`;
-                    menuText += `╰──────────●●►\n`;
-                });
-            }
-            
-            // 3. Footer
-            menuText += "\n➖➖➖➖➖➖➖➖➖➖➖\n";
-            menuText += "> © 𝟐𝟎𝟐𝟓 | 𝐀𝐤𝐚𝐬𝐡 𝐊𝐚𝐯𝐢𝐧𝐝𝐮\n";
-            
+                menuText += `┃◈╭─────────────·๏\n`;
+                menuText += `┃◈│ ${categoryNumber}. ${emoji} ${title} (${commandCount})\n`; 
+                menuText += `┃◈╰───────────┈⊷\n`;
+                categoryNumber++;
+            });
+
+            // අවසාන කොටස වසා දැමීම
+            menuText += `╰──────────────┈⊷\n`;
+
+            menuText += `\n_💡 Type ${finalPrefix}menu <number> or ${finalPrefix}menu <category> to see commands._`;
+
             // SEND IMAGE + MENU TEXT
             await zanta.sendMessage(
                 from,
@@ -81,12 +200,8 @@ cmd(
             );
 
         } catch (err) {
-            console.error(err);
+            console.error("Menu Command Error:", err);
             reply("❌ Error generating menu.");
         }
     }
 );
-
-
-
-
