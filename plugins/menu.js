@@ -153,7 +153,10 @@ cmd(
                         emoji = '🔄';
                         break;
                     case 'fun':
-                        emoji = '😄';
+                        emoji = '🙃';
+                        break;
+                    case 'game':
+                        emoji = '😎';
                         break;
                     case 'group':
                         emoji = '👥';
@@ -205,3 +208,4 @@ cmd(
         }
     }
 );
+
