@@ -4,7 +4,7 @@ const config = require("../config");
 
 cmd(
     {
-        pattern: "get", 
+        pattern: "send", 
         react: "📥",
         desc: "Download status",
         category: "media",
