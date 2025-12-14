@@ -51,7 +51,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 // --------------------------------------------------------------------------
 
-// 💾 Memory-Based Message Store (Anti-Delete Logic ඉවත් කර ඇත)
+// 💾 Memory-Based Message Store (Anti-Delete Logic ඉවත් කර ඇත.)
 // const messagesStore = {}; 
 
 async function ensureSessionFile() {
