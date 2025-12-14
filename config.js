@@ -7,7 +7,7 @@ return text === fault ? true : false;
 }
 
 
-const OWNER_NUMBER = '94766247995'; // ඔබගේ Bot Owner ගේ අංකය.
+const OWNER_NUMBER = '94766247995'; // ඔබගේ Bot Owner ගේ අංකය
 const DEFAULT_BOT_NAME = process.env.BOT_NAME || "ZANTA-MD-v2";
 const ALIVE_MSG_TEMPLATE = aliveMessageData.getAliveMessage();
 
