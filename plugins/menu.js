@@ -3,7 +3,7 @@ const os = require('os');
 const config = require("../config"); 
 
 // 🖼️ MENU Image URL එක 
-const MENU_IMAGE_URL = "https://raw.githubusercontent.com/Akashkavindu/ZANTA_MD/refs/heads/main/images/ChatGPT%20Image%20Nov%2021%2C%202025%2C%2001_49_53%20AM.png";
+const MENU_IMAGE_URL = "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/menu.jpg?raw=true";
 
 // 🎯 Memory Map to store the last sent Menu message ID for reply functionality.
 // Key: Chat ID (from), Value: Message ID (id)
@@ -201,3 +201,4 @@ cmd(
 module.exports = {
     lastMenuMessage
 };
+
