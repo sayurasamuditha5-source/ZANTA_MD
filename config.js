@@ -23,6 +23,6 @@ ALIVE_IMG: process.env.ALIVE_IMG || "https://raw.githubusercontent.com/Akashkavi
 ALIVE_MSG: process.env.ALIVE_MSG || FINAL_ALIVE_MSG, 
 BOT_OWNER: OWNER_NUMBER, 
 BOT_NAME: DEFAULT_BOT_NAME,
-AUTO_STATUS_REACT: process.env.AUTO_STATUS_REACT === 'true', //true or false
-ALWAYS_ONLINE: process.env.ALWAYS_ONLINE === 'true' // 'true' or 'false'
+AUTO_STATUS_REACT: (process.env.AUTO_STATUS_REACT || "true") === "true", //true or false
+ALWAYS_ONLINE: (process.env.ALWAYS_ONLINE || "false") === "true" // 'true' or 'false'
 };
