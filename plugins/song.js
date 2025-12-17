@@ -29,16 +29,14 @@ cmd({
         }
 
         let desc = `
-╭━─━─━─━─━─━─━─━─━╮
+╭━─━─━─━─━─━─━─━╮
 ┃ *${botName} SONG DOWNLOADER*
-╰━─━─━─━─━─━─━─━─━╯
+╰━─━─━─━─━─━─━─━╯
 
 🎬 *Title:* ${data.title}
 ⏱️ *Duration:* ${data.timestamp}
 📅 *Uploaded:* ${data.ago}
 👀 *Views:* ${data.views.toLocaleString()}
-
-> *Downloading audio... Please wait.*
 `;
 
         await zanta.sendMessage(from, { image: { url: data.thumbnail }, caption: desc }, { quoted: mek });
