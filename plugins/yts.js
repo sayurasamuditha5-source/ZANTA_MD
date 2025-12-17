@@ -1,66 +1,46 @@
 const { cmd } = require("../command");
 const yts = require("yt-search");
-const config = require("../config"); // BOT_NAME ලබා ගැනීමට
 
-cmd(
-  {
+cmd({
     pattern: "yts",
-    alias: ["yts", "youtubesearch"],
+    alias: ["ytsearch", "youtubesearch"],
     react: "🔎",
-    desc: "Search YouTube videos",
+    desc: "Search for YouTube videos.",
     category: "search",
     filename: __filename,
-  },
-  async (
-    zanta,
-    mek,
-    m,
-    {
-      from,
-      quoted,
-      q,
-      reply,
-    }
-  ) => {
+}, async (zanta, mek, m, { from, reply, q }) => {
     try {
-      if (!q) return reply("*Please provide a search query!* 🔍");
+        if (!q) return reply("🔍 *කරුණාකර සෙවිය යුතු නම ලබා දෙන්න.*");
 
-      reply("*Searching YouTube for you...* ⌛");
+        // ආරම්භක පණිවිඩය යවා එහි ID එක ලබා ගනී
+        const loading = await zanta.sendMessage(from, { text: "⌛ *Searching YouTube for you...*" }, { quoted: mek });
 
-      const search = await yts(q);
+        const search = await yts(q);
+        const results = search.videos.slice(0, 10);
 
-      if (!search || !search.all || search.all.length === 0) {
-        return reply("*No results found on YouTube.* ☹️");
-      }
+        if (!results || results.length === 0) {
+            return await zanta.sendMessage(from, { text: "☹️ *ප්‍රතිඵල කිසිවක් හමු නොවීය.*", edit: loading.key });
+        }
 
-      const results = search.videos.slice(0, 10); 
-      let formattedResults = results.map((v, i) => (
-        `🎬 *${i + 1}. ${v.title}*\n📅 ${v.ago} | ⌛ ${v.timestamp} | 👁️ ${v.views.toLocaleString()} views\n🔗 ${v.url}`
-      )).join("\n\n");
-      const botName = config.BOT_NAME || "ZANTA-MD"; 
+        const botName = global.CURRENT_BOT_SETTINGS.botName;
 
-      const caption = `  
-╭━─━─━─━─━─━─━─━╮
-┃*${botName} YT Search*
-╰━─━─━─━─━─━─━─━╯
+        // ප්‍රතිඵල පෙළගැස්වීම
+        let formattedResults = results.map((v, i) => (
+            `🎬 *${i + 1}. ${v.title}*\n📅 ${v.ago} | ⌛ ${v.timestamp}\n👁️ ${v.views.toLocaleString()} views\n🔗 ${v.url}`
+        )).join("\n\n");
 
-🔎 *Query*: ${q}
-${formattedResults}
-   `;
+        const caption = `╭━─━─━─━─━─━─━─━╮\n┃ *${botName} YT SEARCH*\n╰━─━─━─━─━─━─━─━╯\n\n🔎 *Query*: ${q}\n\n${formattedResults}\n\n> *© ${botName}*`;
 
-      await zanta.sendMessage(
-        from,
-        {
-          image: {
-            url: "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/yt.jpg?raw=true",
-          },
-          caption,
-        },
-        { quoted: mek }
-      );
+        // සාර්ථක වූ පසු පණිවිඩය Edit කර රූපය යැවීම
+        await zanta.sendMessage(from, { text: "✅ *Search completed!*", edit: loading.key });
+
+        await zanta.sendMessage(from, {
+            image: { url: "https://github.com/Akashkavindu/ZANTA_MD/blob/main/images/yt.jpg?raw=true" },
+            caption: caption
+        }, { quoted: mek });
+
     } catch (err) {
-      console.error(err);
-      reply("*An error occurred while searching YouTube.* ❌");
+        console.error(err);
+        reply("❌ *සෙවීමේදී දෝෂයක් සිදු විය.*");
     }
-  }
-);
+});
