@@ -34,3 +34,34 @@ cmd({
         reply("❌ JID එක ලබා ගැනීමට නොහැකි විය.");
     }
 });
+
+cmd({
+    pattern: "ping",
+    alias: ["speed", "ms"],
+    react: "⚡",
+    desc: "Check bot's response speed.",
+    category: "main",
+    filename: __filename,
+}, async (zanta, mek, m, { from, reply }) => {
+    try {
+        const startTime = Date.now(); // මැසේජ් එක ලැබුණු වෙලාව
+        
+        // මුලින්ම පුංචි මැසේජ් එකක් යවනවා
+        const pinger = await zanta.sendMessage(from, { text: "🚀 *Checking Speed...*" }, { quoted: mek });
+        
+        const endTime = Date.now(); // රිප්ලයි එක යැවූ වෙලාව
+        const ping = endTime - startTime; // කාලය අතර වෙනස
+
+        const botName = global.CURRENT_BOT_SETTINGS?.botName || "ZANTA-MD";
+
+        // රිප්ලයි එක Edit කරලා Speed එක පෙන්වනවා
+        await zanta.sendMessage(from, { 
+            text: `⚡ *${botName} SPEED REPORT*\n\n🚄 *Response Time:* ${ping}ms\n📡 *Status:* Online\n\n> *© ZANTA-MD*`, 
+            edit: pinger.key 
+        });
+
+    } catch (err) {
+        console.error(err);
+        reply("❌ වේගය පරීක්ෂා කිරීමේදී දෝෂයක් විය.");
+    }
+});
