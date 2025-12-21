@@ -17,6 +17,7 @@ const SettingsSchema = new mongoose.Schema({
     autoStatusSeen: { type: String, default: 'true' },
     alwaysOnline: { type: String, default: 'false' },
     readCmd: { type: String, default: 'false' },
+    antiBadword: { type: String, default: 'false' },
     autoVoice: { type: String, default: 'false' }
 });
 
@@ -48,6 +49,7 @@ async function getBotSettings() {
         autoStatusSeen: 'true',
         alwaysOnline: 'false',
         readCmd: 'false',
+        antiBadword: 'false',
         autoVoice: 'false'
     };
 
