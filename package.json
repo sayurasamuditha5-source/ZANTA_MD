@@ -16,7 +16,7 @@
     "@xaviabot/fb-downloader": "^1.0.14",
     "api-dylux": "^1.8.5",
     "audio-decode": "^2.2.3",
-    "axios": "^1.6.8",
+    "axios": "^1.13.2",
     "figlet": "^1.9.4",
     "browser-id3-writer": "^6.3.1",
     "cheerio": "^1.1.2",
