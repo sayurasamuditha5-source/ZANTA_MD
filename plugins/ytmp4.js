@@ -61,6 +61,7 @@ cmd({
     pattern: "ytmp4",
     alias: ["video", "vid"],
     react: "🎞️",
+    desc: "Download yt video",
     category: "download",
     filename: __filename,
 }, async (zanta, mek, m, { from, reply, q }) => {
@@ -93,6 +94,7 @@ cmd({
     pattern: "ytmp3",
     alias: ["song", "ytaudio"],
     react: "🎶",
+    desc: "Download yt song",
     category: "download",
     filename: __filename,
 }, async (zanta, mek, m, { from, reply, q }) => {
